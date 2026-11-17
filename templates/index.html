@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1877f2">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="ClassBook">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+  <title>ClassBook</title>
+  <style>
+    * { box-sizing: border-box; font-family: Arial, sans-serif; }
+    body { background-color: #f0f2f5; margin: 0; padding: 0; color: #1c1e21; }
+    .navbar { background-color: #1877f2; color: white; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; }
+    .navbar h1 { margin: 0; font-size: 24px; }
+    .container { max-width: 600px; margin: 20px auto; padding: 0 15px; }
+    .card { background: white; border-radius: 8px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+    input[type="text"], textarea { width: 100%; padding: 10px; border: 1px solid #dddfe2; border-radius: 8px; margin-bottom: 8px; font-size: 14px; }
+    .btn { background-color: #1877f2; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    .btn-small { padding: 5px 10px; font-size: 13px; }
+    .post-header { font-weight: bold; margin-bottom: 4px; }
+    .timestamp { font-size: 12px; color: #65676b; margin-bottom: 10px; }
+    .comment { background: #f0f2f5; padding: 8px 12px; border-radius: 12px; margin-top: 6px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <h1>classbook</h1>
+    <form action="/clear" method="POST" style="margin:0;">
+      <button class="btn" style="background:rgba(255,255,255,0.2);">Reset Board</button>
+    </form>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <form action="/post" method="POST">
+        <input type="text" name="author" placeholder="Your Name" required>
+        <textarea name="content" rows="3" placeholder="Write something to the class..." required></textarea>
+        <button type="submit" class="btn" style="width:100%;">Post to Feed</button>
+      </form>
+    </div>
+
+    {% for post in posts %}
+    <div class="card">
+      <div class="post-header">{{ post.author }}</div>
+      <div class="timestamp">{{ post.time }}</div>
+      <p style="white-space: pre-wrap;">{{ post.content }}</p>
+
+      <form action="/like/{{ post.id }}" method="POST" style="margin-bottom: 10px;">
+        <button type="submit" class="btn btn-small">👍 Like ({{ post.likes }})</button>
+      </form>
+
+      {% for comment in post.comments %}
+        <div class="comment"><strong>{{ comment.author }}:</strong> {{ comment.text }}</div>
+      {% endfor %}
+
+      <form action="/comment/{{ post.id }}" method="POST" style="margin-top: 10px; display: flex; gap: 6px;">
+        <input type="text" name="author" placeholder="Name" style="width: 30%; margin:0;" required>
+        <input type="text" name="text" placeholder="Write a reply..." style="width: 55%; margin:0;" required>
+        <button type="submit" class="btn btn-small" style="width: 15%;">Reply</button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js").catch(() => {
+          console.log("Service worker registration failed.");
+        });
+      });
+    }
+  </script>
+</body>
+</html>
